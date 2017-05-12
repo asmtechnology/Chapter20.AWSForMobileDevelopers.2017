@@ -6,7 +6,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "asmtechnology.com.awschat"
-        minSdkVersion 18
+        minSdkVersion 23
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -44,5 +44,6 @@ dependencies {
     compile 'com.amazonaws:aws-android-sdk-ddb:2.4.1'
     compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.4.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
+    compile 'com.amazonaws:aws-android-sdk-s3:2.4.1'
     testCompile 'junit:junit:4.12'
 }

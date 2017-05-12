@@ -13,10 +13,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import asmtechnology.com.awschat.controllers.ChatManager;
 import asmtechnology.com.awschat.controllers.CognitoIdentityPoolController;
 import asmtechnology.com.awschat.controllers.DynamoDBController;
 import asmtechnology.com.awschat.interfaces.DynamoDBControllerGenericHandler;
 import asmtechnology.com.awschat.interfaces.RecyclerViewHolderListener;
+import asmtechnology.com.awschat.models.User;
 import asmtechnology.com.awschat.recyclerview.FriendListAdapter;
 
 public class HomeActivity extends AppCompatActivity implements RecyclerViewHolderListener {
@@ -133,6 +135,27 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewHolde
     }
 
     public void didTapOnRowAtIndex(int selectedIndex) {
-        // show chat activity.
+
+        CognitoIdentityPoolController identityPoolController = CognitoIdentityPoolController.getInstance(this);
+        if (identityPoolController.mCredentialsProvider == null) {
+            displayMessage("Error", "Cognito Identity has expired. User must login again");
+            return;
+        }
+
+        String fromUserId = identityPoolController.mCredentialsProvider.getIdentityId();
+        if ((fromUserId == null) || (fromUserId.length() == 0)) {
+            displayMessage("Error", "Cognito Identity has expired. User must login again");
+            return;
+        }
+
+        ChatManager chatManager = ChatManager.getInstance(this);
+        User otherUser = chatManager.friendList.get(selectedIndex);
+        String toUserId = otherUser.getId();
+
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("FROM_USER_ID", fromUserId);
+        intent.putExtra("TO_USER_ID", toUserId);
+        startActivity(intent);
+
     }
 }

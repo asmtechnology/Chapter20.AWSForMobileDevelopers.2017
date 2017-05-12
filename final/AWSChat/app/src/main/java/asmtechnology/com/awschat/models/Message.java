@@ -9,7 +9,7 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBTable;
 public class Message {
 
     private String chat_id;
-    private double date_sent;
+    private Double date_sent;
     private String message_id;
     private String message_text;
     private String message_image;
@@ -26,11 +26,11 @@ public class Message {
     }
 
     @DynamoDBRangeKey(attributeName = "date_sent")
-    public double getDate_sent() {
+    public Double getDate_sent() {
         return date_sent;
     }
 
-    public void setDate_sent(double date_sent) {
+    public void setDate_sent(Double date_sent) {
         this.date_sent = date_sent;
     }
 

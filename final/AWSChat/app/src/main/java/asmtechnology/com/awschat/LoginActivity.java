@@ -81,6 +81,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             }
         });
 
+        CognitoIdentityPoolController  identityPoolController = CognitoIdentityPoolController.getInstance(this);
+        identityPoolController.mCredentialsProvider.clear();
+        identityPoolController.mCredentialsProvider.clearCredentials();
+
         configureLoginWithFacebook();
         configureGoogleSignIn();
     }

@@ -62,6 +62,7 @@ public class CognitoUserPoolController {
     public void login(String username,
                       final String password,
                       final CognitoUserPoolControllerGenericHandler completion) {
+
         CognitoUser user = userPool.getUser(username);
         user.getSessionInBackground(new AuthenticationHandler() {
 
