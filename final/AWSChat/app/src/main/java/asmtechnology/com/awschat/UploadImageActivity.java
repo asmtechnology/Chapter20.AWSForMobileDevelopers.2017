@@ -26,6 +26,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.UUID;
+
 import asmtechnology.com.awschat.controllers.ChatManager;
 import asmtechnology.com.awschat.interfaces.ChatManagerGenericHandler;
 import asmtechnology.com.awschat.interfaces.ChatManagerLoadChatHandler;
@@ -121,19 +127,41 @@ public class UploadImageActivity extends AppCompatActivity {
         }
     }
 
-    private void sendImage(final String filePath) {
+    private void sendImage(String filePath) {
 
         disableUI();
         showProgressDialog();
 
+
+        String pngFilePath = filePath;
+        String extension = FilenameUtils.getExtension(filePath).toLowerCase();
+        if (extension != "png") {
+            pngFilePath = convertToPNG(filePath);
+        }
+
+        if (pngFilePath == null) {
+            enableUI();
+            hideProgressDialog();
+            displayFormatConversionError();
+            return;
+        }
+
+        final String inputImagePath = pngFilePath;
+        final boolean shouldDeleteInputFileAfterUpload = (extension != "png") ? true : false;
         final ChatManager chatManager = ChatManager.getInstance(this);
         chatManager.loadChat(fromUserId, toUserId, new ChatManagerLoadChatHandler() {
 
             @Override
             public void didSucceed(Chat chat) {
-                chatManager.sendImage(chat, filePath, new ChatManagerGenericHandler() {
+                chatManager.sendImage(chat, inputImagePath, new ChatManagerGenericHandler() {
                     @Override
                     public void didSucceed() {
+
+                        File f = new File(inputImagePath);
+                        if (f.exists() && shouldDeleteInputFileAfterUpload == true) {
+                            f.delete();
+                        }
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -332,6 +360,63 @@ public class UploadImageActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private void displayFormatConversionError() {
+        final Context context = this;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage("Unable to convert the selected image to a PNG file");
+                builder.setTitle("Error");
+                builder.setCancelable(false);
+
+                builder.setPositiveButton(
+                        "Ok",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+                final AlertDialog alert = builder.create();
+
+                alert.show();
+            }
+        });
+    }
+
+    private String convertToPNG(String inputFilePath) {
+        String folderPath = Environment.getExternalStorageDirectory().toString();
+        String fileName = generateUUID() + ".png";
+        String tempFilePath = folderPath + "/" + fileName;
+
+        Bitmap b = BitmapFactory.decodeFile(inputFilePath);
+        if (b == null) {
+            return null;
+        }
+
+        try {
+            FileOutputStream out = new FileOutputStream(tempFilePath);
+            b.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+        } catch (Exception e) {
+            Log.e("AWSChat", "Failed to create PNG file");
+            return null;
+        }
+
+        return tempFilePath;
+    }
+
+    private String generateUUID() {
+        UUID uuid = UUID.randomUUID();
+        String uuidString = uuid.toString();
+        return uuidString.toUpperCase();
+    }
+
 
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 

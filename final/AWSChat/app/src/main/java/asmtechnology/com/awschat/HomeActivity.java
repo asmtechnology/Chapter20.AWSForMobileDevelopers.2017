@@ -3,7 +3,10 @@ package asmtechnology.com.awschat;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -26,6 +29,9 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewHolde
     private RecyclerView mRecyclerView;
     private FriendListAdapter mAdapter;
 
+    private int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 382;
+    private boolean mWriteExternalStoragePermissionGranted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +52,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewHolde
         mRecyclerView.setAdapter(mAdapter);
 
         refreshFriendList();
+        checkPermissions();
     }
 
     protected void onResume() {
@@ -156,6 +163,35 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewHolde
         intent.putExtra("FROM_USER_ID", fromUserId);
         intent.putExtra("TO_USER_ID", toUserId);
         startActivity(intent);
+
+    }
+
+    private void checkPermissions() {
+
+        int permissionCheck = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+
+        } else {
+            mWriteExternalStoragePermissionGranted = true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(final int requestCode,
+                                           @NonNull final String[] permissions,
+                                           @NonNull final int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mWriteExternalStoragePermissionGranted = true;
+            } else {
+                mWriteExternalStoragePermissionGranted = false;
+            }
+        }
 
     }
 }
